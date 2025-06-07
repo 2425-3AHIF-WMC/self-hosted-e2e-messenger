@@ -78,7 +78,6 @@ msgRouter.post('/:userId/:receiverId', authenticateToken, async (req: Authentica
     }
 });
 
-// New endpoint to mark messages as received and delete them from the server
 msgRouter.delete('/:userId/received', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
     const userId = parseInt(req.params.userId);
     const { messageIds } = req.body;

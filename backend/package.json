@@ -17,6 +17,7 @@
     "express": "^5.0.1",
     "http-status-codes": "^2.3.0",
     "jsonwebtoken": "^9.0.2",
+    "libsodium-wrappers": "^0.7.15",
     "pg": "^8.14.1",
     "socket.io": "^4.8.1"
   },
@@ -25,6 +26,7 @@
     "@types/express": "^5.0.1",
     "@types/jest": "^29.5.14",
     "@types/jsonwebtoken": "^9.0.9",
+    "@types/libsodium-wrappers": "^0.7.14",
     "@types/node": "^22.13.14",
     "@types/pg": "^8.11.11",
     "jest": "^29.7.0",

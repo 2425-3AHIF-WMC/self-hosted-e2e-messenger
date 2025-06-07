@@ -2,7 +2,6 @@ import { AuthenticatedUser, User } from '../models/user-model';
 import { StatusCodes } from 'http-status-codes';
 import argon2 from '@node-rs/argon2';
 import { Utils, BaseResponse } from './utils';
-import { JwtUtils } from './jwt-utils';
 import { ContactUtils } from './contact-utils';
 
 export type UserResponse = BaseResponse<AuthenticatedUser>;
@@ -150,11 +149,6 @@ export class UserUtils extends Utils {
                 );
             }
 
-            const token = JwtUtils.generateToken({
-                uid: result.rows[0].uid,
-                username: result.rows[0].username
-            });
-
             const user: AuthenticatedUser = {
                 uid: result.rows[0].uid,
                 username: result.rows[0].username,
@@ -163,8 +157,7 @@ export class UserUtils extends Utils {
                 is_deleted: result.rows[0].is_deleted,
                 shadow_mode: result.rows[0].shadow_mode,
                 full_name_search: result.rows[0].full_name_search,
-                public_key: result.rows[0].public_key,
-                token: token
+                public_key: result.rows[0].public_key
             };
 
             return this.createSuccessResponse(user, StatusCodes.CREATED);
@@ -256,7 +249,7 @@ export class UserUtils extends Utils {
     }
 
     /**
-     * Login a user and generate JWT token
+     * Login a user
      * @param username The username for login
      * @param password The password to verify
      * @returns A UserResponse object containing statusCode, data, and optional error message
@@ -303,11 +296,6 @@ export class UserUtils extends Utils {
                 );
             }
 
-            const token = JwtUtils.generateToken({
-                uid: user.uid,
-                username: user.username
-            });
-
             const userData: AuthenticatedUser = {
                 uid: user.uid,
                 username: user.username,
@@ -316,8 +304,7 @@ export class UserUtils extends Utils {
                 is_deleted: user.is_deleted,
                 shadow_mode: user.shadow_mode,
                 full_name_search: user.full_name_search,
-                public_key: user.public_key,
-                token: token
+                public_key: user.public_key
             };
 
             return this.createSuccessResponse(userData);
@@ -554,16 +541,11 @@ export class UserUtils extends Utils {
             }
 
             const user = result.rows[0];
-            const token = JwtUtils.generateToken({
-                uid: user.uid,
-                username: user.username
-            });
 
             const userData: AuthenticatedUser = {
                 uid: user.uid,
                 username: user.username,
                 created_at: user.created_at,
-                token: token,
                 display_name: user.display_name,
                 is_deleted: user.is_deleted,
                 shadow_mode: user.shadow_mode,
@@ -659,10 +641,6 @@ export class UserUtils extends Utils {
             }
 
             const updatedUser = updateResult.rows[0];
-            const token = JwtUtils.generateToken({
-                uid: updatedUser.uid,
-                username: updatedUser.username
-            });
 
             const userData: AuthenticatedUser = {
                 uid: updatedUser.uid,
@@ -672,8 +650,7 @@ export class UserUtils extends Utils {
                 is_deleted: updatedUser.is_deleted,
                 shadow_mode: updatedUser.shadow_mode,
                 full_name_search: updatedUser.full_name_search,
-                public_key: updatedUser.public_key,
-                token: token
+                public_key: updatedUser.public_key
             };
 
             return this.createSuccessResponse(userData);
@@ -802,16 +779,11 @@ export class UserUtils extends Utils {
             }
 
             const user = result.rows[0];
-            const token = JwtUtils.generateToken({
-                uid: user.uid,
-                username: user.username
-            });
 
             const userData: AuthenticatedUser = {
                 uid: user.uid,
                 username: user.username,
                 created_at: user.created_at,
-                token: token,
                 display_name: user.display_name,
                 is_deleted: user.is_deleted,
                 shadow_mode: user.shadow_mode,
@@ -825,6 +797,32 @@ export class UserUtils extends Utils {
             return this.createErrorResponse(
                 StatusCodes.INTERNAL_SERVER_ERROR,
                 'An unexpected error occurred while updating the public key.'
+            );
+        }
+    }
+
+    /**
+     * Gets a list of all user public keys
+     * @returns A BaseResponse object containing an array of user data with public keys
+     */
+    public async getAllUsersPublicKeys(): Promise<BaseResponse<{ uid: number; public_key: string }[]>> {
+        try {
+            const result = await this.dbSession.query(`
+                SELECT uid, public_key
+                FROM account 
+                WHERE is_deleted = false AND public_key IS NOT NULL`
+            );
+
+            if (result.rowCount === 0) {
+                return this.createSuccessResponse([], StatusCodes.OK);
+            }
+
+            return this.createSuccessResponse(result.rows, StatusCodes.OK);
+        } catch (error) {
+            console.error('Error getting user public keys:', error);
+            return this.createErrorResponse(
+                StatusCodes.INTERNAL_SERVER_ERROR,
+                'An error occurred while retrieving user public keys'
             );
         }
     }

@@ -4,17 +4,6 @@ import { StatusCodes } from 'http-status-codes';
 import argon2 from '@node-rs/argon2';
 
 jest.mock('@node-rs/argon2');
-jest.mock('../utilities/jwt-utils', () => {
-    return {
-        TokenPayload: {},
-        JwtUtils: {
-            generateToken: jest.fn((payload) => 'mock-token'),
-            verifyToken: jest.fn((token) => {
-                return null;
-            })
-        }
-    };
-});
 
 jest.mock('jsonwebtoken', () => ({
     sign: jest.fn(),

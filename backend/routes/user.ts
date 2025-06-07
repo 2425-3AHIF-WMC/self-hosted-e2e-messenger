@@ -3,6 +3,7 @@ import { StatusCodes } from 'http-status-codes';
 import { UserUtils, UserResponse, BasicUserResponse } from '../utilities/user-utils';
 import { DbSession } from '../db';
 import { AuthenticatedRequest, authenticateToken } from '../middleware/auth-middleware';
+import { ServerKeyUtils } from '../utilities/server-key-utils';
 
 export const userRouter = Router();
 
@@ -257,6 +258,18 @@ userRouter.put('/:uid/keys', authenticateToken, async (req: AuthenticatedRequest
         await dbSession.complete(false);
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
             error: "An unexpected error occurred while processing your request"
+        });
+    }
+});
+
+userRouter.get('/server-key', (req: Request, res: Response) => {
+    try {
+        const publicKey = ServerKeyUtils.getPublicKey();
+        res.status(StatusCodes.OK).json({ publicKey });
+    } catch (error) {
+        console.error('Error getting server public key:', error);
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ 
+            error: 'An error occurred while retrieving server public key' 
         });
     }
 });

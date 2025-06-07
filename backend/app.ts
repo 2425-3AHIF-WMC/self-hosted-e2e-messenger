@@ -9,6 +9,7 @@ import { contactRouter } from './routes/contact';
 import { msgRouter } from './routes/message';
 import http from 'http';
 import { Server } from 'socket.io';
+import { ServerKeyUtils } from './utilities/server-key-utils';
 
 dotenv.config({
     path: path.resolve(
@@ -16,6 +17,9 @@ dotenv.config({
         '../.env'
     ),
 });
+
+// Initialize server keys
+await ServerKeyUtils.initialize();
 
 const app = express();
 const server = http.createServer(app);
@@ -27,12 +31,26 @@ const io = new Server(server, {
     }
 });
 
-// Socket.IO connection handling
+// Socket.IO connection handling with crypto authentication
 io.on('connection', (socket) => {
     console.log('User connected:', socket.id);
-
+    
+    // Verify user authentication data
+    const auth = socket.handshake.auth?.user;
+    if (!auth || !auth.uid || !auth.username || !auth.public_key) {
+        console.error('Invalid authentication data');
+        socket.disconnect();
+        return;
+    }
+    
     // Join user to a personal room based on their user ID
     socket.on('join', (userId) => {
+        // Verify that the joined userId matches the authenticated user
+        if (userId !== auth.uid) {
+            console.error('User ID mismatch in join request');
+            return;
+        }
+        
         socket.join(`user_${userId}`);
         console.log(`User ${userId} joined their room`);
     });

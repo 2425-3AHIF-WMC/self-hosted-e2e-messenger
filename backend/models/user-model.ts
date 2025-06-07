@@ -7,7 +7,6 @@ export interface AuthenticatedUser {
     shadow_mode?: boolean;
     full_name_search?: boolean;
     public_key: string;
-    token: string;
 }
 
 export interface User {
