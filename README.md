@@ -13,10 +13,11 @@ This project implements a self-hosted end-to-end encrypted messaging application
 
 ## Features
 
-* End-to-end encryption
+* End-to-end encryption for all messages
+* Secure cryptographic authentication system using user keypairs
 * Self-hosted infrastructure
 * User authentication and registration
-* Real-time messaging
+* Real-time messaging with secure WebSocket connections
 * Message persistence
 * Cross-platform compatibility
 
@@ -111,8 +112,14 @@ The application is built using a client-server architecture:
 | DB_PORT | Database port (typically 5432 for PostgreSQL) |
 | BACKEND_PORT | Port for the backend server |
 | FRONTEND_PORT | Port for the frontend server |
-| JWT_SECRET | Secret key for JWT token generation |
 
 ## Security Considerations
 
-- The JWT secret should be a long, random string to ensure security. You could use this website to generate a secure key: [jwtsecret.com](https://jwtsecret.com/generate).
+- End-to-end encryption ensures that messages can only be read by the intended recipient.
+- Authentication is handled through cryptographic signatures using the user's keypair.
+  - See [Crypto Authentication System](docs/crypto-auth.md) for details.
+- Each authenticated request is individually signed by the user's private key and verified by the server.
+- No tokens are used in the authentication process, eliminating the risk of token theft and replay attacks.
+- The server generates new cryptographic keys on each restart.
+- Timestamps in authentication payloads prevent replay attacks.
+- Private keys are generated client-side and never transmitted to the server.
